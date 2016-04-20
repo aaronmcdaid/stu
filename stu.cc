@@ -30,7 +30,11 @@ using namespace std;
  * options, and not long options.  We avoid getopt_long() as it is a GNU
  * extension, and the short options are sufficient for now. 
  */
+#ifdef USE_GNU_GETOPT
+#define STU_OPTIONS "-ac:C:Ef:F:ghj:kKm:M:pqsvVwxz"
+#else
 #define STU_OPTIONS "ac:C:Ef:F:ghj:kKm:M:pqsvVwxz"
+#endif
 
 /* The following strings do not contain tabs, but only space characters */  
 #define STU_HELP						       \
@@ -136,6 +140,19 @@ int main(int argc, char **argv, char **envp)
 			case 'x': option_individual= true;     break;
 			case 'z': option_statistics= true;     break;
 
+#ifdef USE_GNU_GETOPT
+			case 1: /* If USE_GNU_GETOPT is defined, then this is where all non-option arguments will come
+				 * From the getopt(3) manpage:
+				 *    "If the first character of  optstring  is '-', then each nonoption argv-element
+				 *    is handled as if it were the argument of an option with character code 1.  (This
+				 *    is used by programs that were written to expect options and other argv-elements
+				 *    in any order and that care about the ordering of the two.)  The special
+				 *    argument "--" forces an end of option-scanning regardless of  the  scanning mode."
+				 */
+			    add_dependencies_string(dependencies, optarg);
+				break;
+
+#endif
 			case 'c': 
 				{
 					had_option_c= true; 
@@ -243,6 +260,9 @@ int main(int argc, char **argv, char **envp)
 		}
 
 		order_vec= (order == Order::RANDOM); 
+
+        /* If USE_GNU_GETOPT is defined, then optind==argc here,
+         * and therefore the following loop does nothing */
 
 		/* Targets passed as-is on the command line, outside of options */ 
 		for (int i= optind;  i < argc;  ++i) {
