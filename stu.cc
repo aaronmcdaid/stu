@@ -122,6 +122,9 @@ int main(int argc, char **argv, char **envp)
 		bool had_option_c= false; /* Both lower and upper case */
 		bool had_option_f= false; /* Both lower and upper case */
 		bool had_option_F= false; /* Only -F */
+#ifdef USE_GNU_GETOPT
+		bool use_C_not_c_for_nonoptions = false;
+#endif
 
 		for (int c; (c= getopt(argc, argv, STU_OPTIONS)) != -1;) {
 			switch (c) {
@@ -149,6 +152,12 @@ int main(int argc, char **argv, char **envp)
 				 *    in any order and that care about the ordering of the two.)  The special
 				 *    argument "--" forces an end of option-scanning regardless of  the  scanning mode."
 				 */
+				if(use_C_not_c_for_nonoptions) {
+					goto label_option_C;
+				}
+				else {
+					goto label_option_c;
+				}
 			    add_dependencies_string(dependencies, optarg);
 				break;
 
@@ -156,6 +165,10 @@ int main(int argc, char **argv, char **envp)
 			case 'c': 
 				{
 					had_option_c= true; 
+#ifdef USE_GNU_GETOPT
+					use_C_not_c_for_nonoptions = false;
+label_option_c:
+#endif
 					if (*optarg == '\0') {
 						print_error("Option -c must take non-empty argument"); 
 						exit(ERROR_FATAL);
@@ -173,6 +186,10 @@ int main(int argc, char **argv, char **envp)
 			case 'C': 
 				{
 					had_option_c= true; 
+#ifdef USE_GNU_GETOPT
+					use_C_not_c_for_nonoptions = true;
+label_option_C:
+#endif
 					add_dependencies_string(dependencies, optarg);
 					break;
 				}
